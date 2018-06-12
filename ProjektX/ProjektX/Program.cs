@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Net;
+using Newtonsoft.Json;
 
 namespace ISS
 {
@@ -15,9 +16,45 @@ namespace ISS
             {
                 var issTracking = webClient.DownloadString("http://api.open-notify.org/iss-now.json");
 
-                JsonParser wert = new JsonParser();
-                int foo = wert.timestamp;
-                Console.WriteLine(foo);
+
+
+                //  Console.WriteLine(issTracking);
+
+               
+                var issData = JsonConvert.DeserializeObject<IssData>(issTracking);
+                var onCheck = JsonConvert.DeserializeObject<OnCheck>(issTracking);
+                string onlineCheck = onCheck.Message;
+
+                if (onlineCheck == "success")
+                {
+                    Console.WriteLine("ISS online");
+                }
+
+                else
+                {
+                    Console.WriteLine("ISS offline");
+                }
+
+               string openMaps = string.Format(System.Globalization.CultureInfo.InvariantCulture.NumberFormat, "www.google.com/maps/place/{0},{1}", issData.IssPosition.Latitude, issData.IssPosition.Longitude);
+
+                System.Diagnostics.Process.Start(openMaps);
+
+            
+               
+
+           
+
+                
+                
+                Console.WriteLine(issData.IssPosition.Latitude);
+                Console.WriteLine(issData.IssPosition.Longitude);
+                Console.WriteLine(onlineCheck);
+   
+
+
+
+
+
 
 
 
@@ -31,20 +68,26 @@ namespace ISS
 
         }
 
-
-        public class JsonParser
+        class OnCheck
         {
-            public Iss_Position iss_position { get; set; }
-            public int timestamp { get; set; }
-
-            public string message { get; set; }
+            public string Message;
         }
 
-        public class Iss_Position
+        class IssData
         {
-            public string latitude { get; set; }
-            public string longitude { get; set; }
+            [JsonProperty("iss_position")]
+            public Coordinates IssPosition;
+            public int Timestamp;
+            
         }
+
+        class Coordinates
+        {
+            public decimal Latitude;
+            public decimal Longitude;
+        }
+
+       
 
 
     }
