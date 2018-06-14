@@ -15,58 +15,26 @@ namespace ISS
             using (var webClient = new System.Net.WebClient())
             {
                 var issTracking = webClient.DownloadString("http://api.open-notify.org/iss-now.json");
+                //example {"iss_position": {"latitude": "1.3102", "longitude": "4.2245"}, "timestamp": 1528496959, "message": "success"}
 
-
-
-                //  Console.WriteLine(issTracking);
-
-               
                 var issData = JsonConvert.DeserializeObject<IssData>(issTracking);
                 var onCheck = JsonConvert.DeserializeObject<OnCheck>(issTracking);
-                string onlineCheck = onCheck.Message;
+                var onlineCheck = GetOnlineCheck(onCheck.Message);
 
-                if (onlineCheck == "success")
-                {
-                    Console.WriteLine("ISS online");
-                }
+                //string openMaps = string.Format(System.Globalization.CultureInfo.InvariantCulture.NumberFormat, "www.google.com/maps/place/{0},{1}", issData.IssPosition.Latitude, issData.IssPosition.Longitude);
+                //System.Diagnostics.Process.Start(openMaps);
 
-                else
-                {
-                    Console.WriteLine("ISS offline");
-                }
-
-               string openMaps = string.Format(System.Globalization.CultureInfo.InvariantCulture.NumberFormat, "www.google.com/maps/place/{0},{1}", issData.IssPosition.Latitude, issData.IssPosition.Longitude);
-
-                System.Diagnostics.Process.Start(openMaps);
-
-            
-               
-
-           
-
-                
-                
+                Console.WriteLine(onlineCheck);
                 Console.WriteLine(issData.IssPosition.Latitude);
                 Console.WriteLine(issData.IssPosition.Longitude);
-                Console.WriteLine(onlineCheck);
-   
+                Console.ReadLine();
 
-
-
-
-
-
-
-
-
-                // result is {"iss_position": {"latitude": "45.9627", "longitude": "-88.9175"}, "timestamp": 1528489680, "message": "success"}
 
 
             }
-
-
-
         }
+
+
 
         class OnCheck
         {
@@ -78,8 +46,8 @@ namespace ISS
             [JsonProperty("iss_position")]
             public Coordinates IssPosition;
             public int Timestamp;
-            
         }
+
 
         class Coordinates
         {
@@ -87,8 +55,29 @@ namespace ISS
             public decimal Longitude;
         }
 
-       
+        public static string GetOnlineCheck(string onlineCheck)
+        {
+            string check = ("");
+
+            if (onlineCheck == "success")
+            {
+                check = ("ISS online");
+            }
+
+            else
+            {
+                check = ("ISS offline");
+            }
+
+            return check;
+
+        }
+
+
+
 
 
     }
+
+
 }
