@@ -16,20 +16,26 @@ namespace ISS
             {
                 var issTracking = webClient.DownloadString("http://api.open-notify.org/iss-now.json");
                 var peopleInSpace = webClient.DownloadString("http://api.open-notify.org/astros.json");
-                //example {"iss_position": {"latitude": "1.3102", "longitude": "4.2245"}, "timestamp": 1528496959, "message": "success"}
 
                 var issData = JsonConvert.DeserializeObject<IssData>(issTracking);
-                var onCheck = JsonConvert.DeserializeObject<OnCheck>(issTracking);
                 var peoples = JsonConvert.DeserializeObject<SpaceCowboys>(peopleInSpace);
-                var onlineCheck = GetOnlineCheck(onCheck.Message);
+                var onlineCheck = GetOnlineCheck(issData.DidSucceed);
+                string parseLon = GetCommaToDot(issData.IssPosition.Longitude);
+                string parseLati = GetCommaToDot(issData.IssPosition.Latitude);
+                //example {"iss_position": {"latitude": "1.3102", "longitude": "4.2245"}, "timestamp": 1528496959, "message": "success"}
 
-                string openMaps = string.Format(System.Globalization.CultureInfo.InvariantCulture.NumberFormat, "www.google.com/maps/place/{0},{1}", issData.IssPosition.Latitude, issData.IssPosition.Longitude);
+
+                string upload = "http://api.open-notify.org/iss-pass.json?lat=52.520008&lon=13.404954";
+                string openMaps = "www.google.com/maps/place/"+parseLati+","+parseLon;
+                var getAltitude = webClient.DownloadString(upload);
+                var altitude = JsonConvert.DeserializeObject<IssAltitude>(getAltitude);
                 
 
                 Console.WriteLine(onlineCheck);
                 Console.WriteLine(issData.IssPosition.Latitude);
                 Console.WriteLine(issData.IssPosition.Longitude);
-                Console.WriteLine("Currently are "+peoples.number+" peoples on the ISS ");
+                Console.WriteLine(getAltitude);
+                Console.WriteLine("Currently are "+peoples.number+" people on the ISS ");
                 Console.WriteLine("Do you want to see the postition from the ISS on Google Maps? Type YES or NO is the console");
              
                 string userInput = Console.ReadLine();
@@ -47,14 +53,13 @@ namespace ISS
             }
         }
 
-
-
-        class OnCheck
+        abstract class ApiResponse
         {
-            public string Message;
+            public Status Message;
+            public bool DidSucceed => Message == Status.Success;
         }
 
-        class IssData
+        class IssData : ApiResponse
         {
             [JsonProperty("iss_position")]
             public Coordinates IssPosition;
@@ -66,34 +71,38 @@ namespace ISS
         {
             public decimal Latitude;
             public decimal Longitude;
+            
         }
-        class SpaceCowboys
+        class SpaceCowboys : ApiResponse
         {
             public int number;
         }
 
-        public static string GetOnlineCheck(string onlineCheck)
+        class IssAltitude
         {
-            string check = ("");
+            public decimal altitude;
+        }
+        enum Status
+        {
+            None,
+            Success,
+        }
 
-            if (onlineCheck == "success")
-            {
-                check = ("ISS online");
-            }
-
-            else
-            {
-                check = ("ISS offline");
-            }
-
-            return check;
+        public static string GetOnlineCheck(bool isOnline)
+        {
+            return isOnline ? "ISS online" : "ISS offline";
 
         }
 
 
+        public static string GetCommaToDot(decimal toParse)
+        {
+            string str = toParse.ToString();
 
+            return str.Replace(",", ".");
+        }
 
-
+        
     }
 
 
